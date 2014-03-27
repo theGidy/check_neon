@@ -67,6 +67,17 @@ class Neon(nagiosplugin.Resource):
         yield nagiosplugin.Metric('temperature', float(self.temp['value']))
         yield nagiosplugin.Metric('humidity', float(self.hum['value']))
 
+class NeonSummary(nagiosplugin.Summary):
+    def __init__(self, temp, hum):
+        self.temp = temp
+        self.hum = hum
+    def ok(self, results):
+        return '{0} {1}, {2} {3}'.format(
+            str(results['temperature']),
+            self.temp['unit'],
+            str(results['humidity']),
+            self.hum['unit'],)
+
 @nagiosplugin.guarded
 def main():
     parser = OptionParser()
@@ -123,14 +134,13 @@ def main():
 
     check = nagiosplugin.Check(
         Neon(values['temperature'], values['humidity']),
-
         nagiosplugin.ScalarContext('temperature',
                                    temperature_warn,
                                    temperature_critical),
-
         nagiosplugin.ScalarContext('humidity',
                                    humidity_warn,
-                                   humidity_critical))
+                                   humidity_critical),
+        NeonSummary(values['temperature'], values['humidity']))
 
     return check.main()
 

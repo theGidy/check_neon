@@ -1,18 +1,75 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
+# COPYRIGHT
+#
+# This software is Copyright (c)  2011 NETWAYS GmbH, Gunnar Beutner
+#                                 <support@netways.de>
+#
+# (Except where explicitly superseded by other copyright notices)
+#
+# LICENSE
+#
+# This work is made available to you under the terms of Version 2 of
+# the GNU General Public License. A copy of that license should have
+# been provided with this software, but in any event can be snarfed
+# from http://www.fsf.org.
+#
+# This work is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301 or visit their web page on the internet at
+# http://www.fsf.org.
+#
+#
+# CONTRIBUTION SUBMISSION POLICY:
+#
+# (The following paragraph is not intended to limit the rights granted
+# to you to modify and distribute this software under the terms of
+# the GNU General Public License and is only of importance to you if
+# you choose to contribute your changes and enhancements to the
+# community by submitting them to NETWAYS GmbH.)
+#
+# By intentionally submitting any modifications, corrections or
+# derivatives to this work, or any other work intended for use with
+# this Software, to NETWAYS GmbH, you confirm that
+# you are the copyright holder for those contributions and you grant
+# NETWAYS GmbH a nonexclusive, worldwide, irrevocable,
+# royalty-free, perpetual, license to use, copy, create derivative
+# works based on those contributions, and sublicense and distribute
+# those contributions and any derivatives thereof.
+#
+# Nagios and the Nagios logo are registered trademarks of Ethan Galstad.
 
 import sys
 import nagiosplugin
 import urllib2
-
 from optparse import OptionParser
 from xml.dom import minidom
 
+__version__ = '0.1'
+
 class DataContainer:
+    """ Container class to fetch data from device
+    """
     def __init__(self, host, timeout=4):
+        """ Create a new container
+            Args:
+                host (str): IP or hostname
+                timeout (int): Timeout in seconds
+        """
         self.url = 'http://' + host + '/values.xml'
         self.timeout = timeout
 
     def getText(self, nodelist):
+        """ Convert XML text nodes into strings
+            Args:
+                nodelist (DOM nodelist): A node with sub nodes
+        """
         rc = []
         for node in nodelist:
             if node.nodeType == node.TEXT_NODE:
@@ -20,6 +77,11 @@ class DataContainer:
         return ((''.join(rc)).strip()).encode('ascii')
 
     def parse_nodes(self, target, nodes):
+        """ Parse nodes into a dict
+            Args:
+                target (dict): Target list (for recursive parsing)
+                nodes (DOM nodelist: List of elements to parse
+        """
         for node in nodes:
             if node.nodeType == minidom.Node.ELEMENT_NODE:
                 lowername = (node.nodeName.lower()).encode('ascii')
@@ -33,6 +95,8 @@ class DataContainer:
                     self.parse_nodes(target[lowername], node.childNodes)
 
     def get_values(self):
+        """ Return a dict of data from device
+        """
         f = urllib2.urlopen(self.url, None, self.timeout)
         document = minidom.parse(f)
         root = document.getElementsByTagName('root')[0]
@@ -41,6 +105,10 @@ class DataContainer:
         return target
 
     def print_processor(self, values):
+        """ Helper to print values
+            Args:
+                values (dict)
+        """
         later = {}
         for key,value in sorted(values.items()):
             if type(value) is dict:
@@ -55,23 +123,45 @@ class DataContainer:
             self.print_processor(value)
 
     def print_values(self):
+        """ Print device information to stdout
+        """
         print('Device information:')
         print('-' * 21)
         self.print_processor(self.get_values())
 
 class Neon(nagiosplugin.Resource):
+    """ Resource for nagiosplugin
+    """
     def __init__(self, temp, hum):
+        """ Create a new Neon resource
+            Args:
+                temp (dict): Dict of temperature values
+                hum (dict): Dict of humidity values
+        """
         self.temp = temp
         self.hum = hum
     def probe(self):
+        """ Probe for plugin values
+        """
         yield nagiosplugin.Metric('temperature', float(self.temp['value']))
         yield nagiosplugin.Metric('humidity', float(self.hum['value']))
 
 class NeonSummary(nagiosplugin.Summary):
+    """ Building some text for the output
+    """
     def __init__(self, temp, hum):
+        """ Create a new summary object
+            Args
+                temp (dict): Dict of temperature values
+                hum (dict): Dict of humidity values
+        """
         self.temp = temp
         self.hum = hum
     def ok(self, results):
+        """ Text message for okay results
+            Args:
+                resource (nagiosplugin ResourceContainer): Results
+        """
         return '{0} {1}, {2} {3}'.format(
             str(results['temperature']),
             self.temp['unit'],
@@ -80,7 +170,9 @@ class NeonSummary(nagiosplugin.Summary):
 
 @nagiosplugin.guarded
 def main():
-    parser = OptionParser()
+    """ Main execution function
+    """
+    parser = OptionParser(usage='%prog --host=<ip|hostname>')
 
     parser.add_option('-H', '--host', dest='hostname',
                       help='Hostname of the device')
@@ -118,6 +210,7 @@ def main():
     humidity_warn = None
     humidity_critical = None
 
+    # Using default thresholds configured in the web interface
     if not options.warning:
         temperature_warn = values['temperature']['lowalarm'] + ':' + values['temperature']['highalarm']
         humidity_warn = values['humidity']['lowalarm'] + ':' + values['humidity']['highalarm']
@@ -143,8 +236,6 @@ def main():
         NeonSummary(values['temperature'], values['humidity']))
 
     return check.main()
-
-
 
 if __name__ == '__main__':
     sys.exit(main())

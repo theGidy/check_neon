@@ -140,7 +140,7 @@ Product can be found here:
 Bugs and repository
 -------------------
 
-For chrous of praise or complaints you can go here:
+For chorus of praise or complaints you can go here:
 
 * [https://git.netways.org/plugins/check_neon](https://git.netways.org/plugins/check_neon)
 * [https://www.netways.org/projects/plugins](https://www.netways.org/projects/plugins)

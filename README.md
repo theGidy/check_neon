@@ -11,7 +11,7 @@ The plugin just fech the xml data from the device and probe for thresholds.
 Installation
 ------------
 
-Installation is just simple. You need Python >= 2.6 to run this
+Installation is just simple. You need Python >= 2.6 to run this.
 
 ### Python Setuptools
 

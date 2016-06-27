@@ -181,10 +181,16 @@ def main():
                       help='Display device information')
 
     parser.add_option('-w', '--warning', dest='warning', metavar='RANGE',
-                      help='Warning threshold (optional)')
+                      help='Temperature Warning threshold (optional)')
 
     parser.add_option('-c', '--critical', dest='critical', metavar='RANGE',
-                      help='Critical threshold (optional)')
+                      help='Temperature Critical threshold (optional)')
+
+    parser.add_option('-hw', '--humiditywarning', dest='humiditywarning', metavar='RANGE',
+                      help='Humidity Warning threshold (optional)')
+
+    parser.add_option('-hc', '--humiditycritical', dest='humiditycritical', metavar='RANGE',
+                      help='Humidity Critical threshold (optional)')
 
     parser.add_option('-T', '--timeout', dest='timeout', default=4, type='int',
                       help='Timeout for http requests')
@@ -213,17 +219,23 @@ def main():
     # Using default thresholds configured in the web interface
     if not options.warning:
         temperature_warn = values['temperature']['lowalarm'] + ':' + values['temperature']['highalarm']
-        humidity_warn = values['humidity']['lowalarm'] + ':' + values['humidity']['highalarm']
     else:
         temperature_warn = options.warning
-        humidity_warn = options.warning
+
+    if not options.humiditywarning:
+        humidity_warn = values['humidity']['lowalarm'] + ':' + values['humidity']['highalarm']
+    else:
+        humidity_warn = options.humiditywarning
 
     if not options.critical:
         temperature_critical = values['temperature']['lowalarm'] + ':' + values['temperature']['highalarm']
-        humidity_critical = values['humidity']['lowalarm'] + ':' + values['humidity']['highalarm']
     else:
         temperature_critical = options.critical
-        humidity_critical = options.critical
+
+    if not options.humiditycritical:
+        humidity_critical = values['humidity']['lowalarm'] + ':' + values['humidity']['highalarm']
+    else:
+        humidity_critical = options.humiditycritical
 
     check = nagiosplugin.Check(
         Neon(values['temperature'], values['humidity']),

@@ -186,10 +186,10 @@ def main():
     parser.add_option('-c', '--critical', dest='critical', metavar='RANGE',
                       help='Temperature Critical threshold (optional)')
 
-    parser.add_option('-hw', '--humiditywarning', dest='humiditywarning', metavar='RANGE',
+    parser.add_option('-x', '--humiditywarning', dest='humiditywarning', metavar='RANGE',
                       help='Humidity Warning threshold (optional)')
 
-    parser.add_option('-hc', '--humiditycritical', dest='humiditycritical', metavar='RANGE',
+    parser.add_option('-d', '--humiditycritical', dest='humiditycritical', metavar='RANGE',
                       help='Humidity Critical threshold (optional)')
 
     parser.add_option('-T', '--timeout', dest='timeout', default=4, type='int',

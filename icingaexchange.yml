@@ -8,12 +8,12 @@ type: Plugin
 license: gplv2
 releases: 
   - 
-    name: 1.1
-    description: "1.1 Release"
+    name: 1.2
+    description: "1.2 Release"
     files: 
       - 
         name: check_neon.py
         url: "file:///check_neon.py"
         description: none
-        checksum: b85524c9aad866119ca788e409bd5ec8
+        checksum: 1825f58096bbaaff7c43189df3b537e0
 

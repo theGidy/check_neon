@@ -46,12 +46,21 @@
 # Nagios and the Nagios logo are registered trademarks of Ethan Galstad.
 
 import sys
-import nagiosplugin
-import urllib2
+
+
+major_version = sys.version_info.major
+if major_version == 2:
+    from urllib2 import urlopen
+    from urllib2 import URLError
+elif major_version == 3:
+    from urllib.error import URLError
+    from urllib.request import urlopen
+
 from optparse import OptionParser
 from xml.dom import minidom
+import nagiosplugin
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 class DataContainer:
     """ Container class to fetch data from device
@@ -97,7 +106,7 @@ class DataContainer:
     def get_values(self):
         """ Return a dict of data from device
         """
-        f = urllib2.urlopen(self.url, None, self.timeout)
+        f = urlopen(self.url, None, self.timeout)
         document = minidom.parse(f)
         root = document.getElementsByTagName('root')[0]
         target = {}
@@ -208,7 +217,7 @@ def main():
 
     try:
         values = container.get_values()
-    except urllib2.URLError as e:
+    except URLError as e:
         raise nagiosplugin.CheckError(e.reason)
 
     temperature_warn = None
